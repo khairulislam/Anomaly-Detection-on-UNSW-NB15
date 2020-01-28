@@ -14,6 +14,7 @@ new labels on test data. They argued this is a notable limitation of the trainin
 ### Multiclass classification
 As SVM was found to be performing best during binary classification, it was picked to feed its results
 to a multiclass classifier in stage two. The figures show that C5.0 performed the best.
+
 ![Accuracy comparison](accuracy%20comparison.png)
 ![multiclass f1-score](multiclass%20classifiers%20f1-score.png)
 
@@ -56,6 +57,7 @@ Dipali Gangadhar Mogal1, Sheshnarayan R. Ghungrad2, Bapusaheb B. Bhusare3. 2017
 
 No mention of whether the result is on train data or test data. Also which validation process was followed
 isn't mentioned anywhere in the paper.
+
 ![NB and LR](nb%20and%20lr%20for%20unsw.png)
 
 # Towards Developing Network forensic mechanism for Botnet Activities in the IoT based on Machine Learning Techniques
@@ -67,10 +69,12 @@ validation in order to effectively measure their performance.
 
 To test the classifiers, we performed Information Gain Ranking Filter (IG) for
 selecting the highest ten ranked features as listed in Table 2.
+
 ![top features](top%20ten%20features.png)
 
 
 Decision Tree C4.5 Classifier was the best at distinguishing between Botnet and normal network traffic.
+
 ![four techniques](performance%20evaluation%20of%20four%20techniques.png)
 
 Limitations:
@@ -107,12 +111,14 @@ Couldn't understand anything, as it is written in korean.
 By Nour Moustofa. Nov 2015
 
 Very poor results
+
 ![evaluation](evaluataion%20of%20unsw-nb15%20with%20best%20features.png)
 
 # The evaluation of Network Anomaly Detection Systems: Statistical analysis of the UNSW-NB15 data set and the comparison with the KDD99 data set
 By Nour Moustofa. Jan 2016
 
 Not sure whether the results are on train data or test data.
+
 ![comparison](comparison%20between%20KDD99%20and%20UNSW-NB15.png)
 
 
