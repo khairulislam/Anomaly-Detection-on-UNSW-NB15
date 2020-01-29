@@ -1,3 +1,11 @@
+# Intrusion Detection In IoT Using Artificial Neural Networks On UNSW-15 Dataset 
+21 Nov 2019
+
+Proposed ANN approach achieves an average accuracy of 84%
+and less than %8 of average false positive rate in repeated 10-
+fold cross-validation. 
+
+
 # Network Based Intrusion Detection Using the UNSW-NB15 Dataset
 Souhail Meftah1, Tajjeeddine Rachidi1 and Nasser Assem. Sep 2019.
 
@@ -17,6 +25,16 @@ to a multiclass classifier in stage two. The figures show that C5.0 performed th
 
 ![Accuracy comparison](accuracy%20comparison.png)
 ![multiclass f1-score](multiclass%20classifiers%20f1-score.png)
+
+# Effective and efficient network anomaly detection system using machine learning algorithm
+Mukrimah Nawir, Amiza Amir, Naimah Yaakob, Ong Bi Lynn. March 2019
+
+Used ten-fold cross validation on the combined (train+test) dataset.
+
+![percentage of accuracy](percentage%20of%20accuracy.png)
+
+![comparison of centralized and distributed](comparison%20of%20centralized%20and%20distributed.png)
+
 
 # UNSW-NB15 Dataset Feature Selection and Network Intrusion Detection using Deep Learning
 V. Kanimozhi, Prem Jacob. Jan 2019
@@ -47,6 +65,22 @@ and NIMS botnet datasets.
 
 So they combined both dataset and separately gave predictions for DNS data and HTTP data.
 
+# Performance Comparison of Intrusion Detection Machine Learning Classifiers on Benchmark and New Datasets
+Mohammed F. Suleiman. 1 Nov 2018
+
+Used ten-fold cross validation on train dataset. For the UNSW-NB15 dataset, NB has the lowest accuracy
+with 50.1% and execution time of 0.71 secs, SVM and ANN
+produce a good accuracy of 86.80% and 81.91% and a high
+execution time 2120.46secs and 16025.36secs respectively. J48
+have an accuracy of 89.39% and time of 15.37 secs. K-NN
+has an accuracy of 86.31 percent with the best time of 0.03
+secs. RF produced the best accuracy of 90.14% with a time
+of 64.15 secs to build the model as shown in Figure 1.
+
+![performance metrics](unsw%20performance%20metrics.png)
+
+
+
 # Enhanced Network Anomaly Detection Based on Deep Neural Networks
 SHERAZ NASEER1,2, YASIR SALEEM1 ... September 21, 2018
 
@@ -59,6 +93,12 @@ No mention of whether the result is on train data or test data. Also which valid
 isn't mentioned anywhere in the paper.
 
 ![NB and LR](nb%20and%20lr%20for%20unsw.png)
+
+# Using Deep Learning Model for Network Scanning Detection
+No clear mention of evaluation process. Mentioned using train dataset. But no further mention of what happened.
+
+![comparison results](comparison%20results.png)
+
 
 # Towards Developing Network forensic mechanism for Botnet Activities in the IoT based on Machine Learning Techniques
 Nickilaos Koroniotis1, Nour Moustafa1, Elena Sitnikova1, Jill Slay1. 2017
