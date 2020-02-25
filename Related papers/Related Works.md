@@ -95,7 +95,14 @@ isn't mentioned anywhere in the paper.
 ![NB and LR](nb%20and%20lr%20for%20unsw.png)
 
 # Using Deep Learning Model for Network Scanning Detection
-No clear mention of evaluation process. Mentioned using train dataset. But no further mention of what happened.
+Only detects a specific attack type: network scanning.
+
+In the training dataset, there are 10491 instances, while in the test dataset there 
+are 3496 instances. For the UNSW-NB15 dataset, because the scanning types are
+labelled together, we only apply a binary classification to
+determine whether the data is an attack or not. We also used
+the ’’normal” data to train and test the model. 
+
 
 ![comparison results](comparison%20results.png)
 
