@@ -83,3 +83,10 @@ them into two sets for training and testing, respectively, each
 of which contains 1.905 million and 0.635 million samples.
 The ratios of normal vs. attack samples of both sets are 6.9,
 remaining the same as in the original dataset.
+* An Ensemble Intrusion Detection Technique
+based on proposed Statistical Flow Features for
+Protecting Network Traffic of Internet of Things: 
+Only used DNS and HTTP protocol data.
+
+* Analysis of Lightweight Feature Vectors for Attack
+Detection in Network Traffic: Did on complete unsw-nb15 dataset. Feature scaling, selection, one hot encoding, pca, 5 fold cross validation

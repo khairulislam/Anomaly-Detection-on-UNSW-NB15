@@ -1,5 +1,4 @@
 \documentclass[14pt, conference]{IEEEtran}
-\usepackage{nopageno}
 \ifCLASSINFOpdf
 \else
 \fi
@@ -7,6 +6,7 @@
 \IEEEoverridecommandlockouts
 
 \usepackage{listings}
+%\usepackage{xcolor}
 \usepackage[table, svgnames]{xcolor}
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
@@ -41,8 +41,8 @@
 \usepackage{multirow}
 %\usepackage{subcaption}
 \usepackage{flushend}
-\usepackage{hyperref}
-\usepackage{tabularx} 
+%\usepackage{hyperref}
+\usepackage{tabularx}
 \usepackage{booktabs} % For formal tables
 \usepackage{hhline}
 \usepackage{array}
@@ -63,13 +63,16 @@
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
+%\hypersetup{bookmarks=false}
+
 \begin{document}
 
-\title{Anomaly Detection Using Ensemble of Machine Learning Models}
+\title{Network Anomaly Detection Using LightGBM: \\ A Gradient Boosting Classifier}
 
 \author{
 \IEEEauthorblockN{Md. Khairul Islam\textsuperscript{1},
 Prithula Hridi\textsuperscript{1}, Md. Shohrab Hossain\textsuperscript{1}, Husnu S. Narman\textsuperscript{2}}
+
 \IEEEauthorblockA{\textsuperscript{1}Department of Computer Science and Engineering, Bangladesh University of Engineering and Technology, Bangladesh\\
     \textsuperscript{2}Weisberg Division of Computer Science, Marshall University, Huntington, WV, USA\\}
 \IEEEauthorblockA{Email:  khairulislamtanim@gmail.com, prithula5117@gmail.com, mshohrabhossain@cse.buet.ac.bd,  narman@marshall.edu}
@@ -78,530 +81,595 @@ Prithula Hridi\textsuperscript{1}, Md. Shohrab Hossain\textsuperscript{1}, Husnu
 \maketitle
 
 \begin{abstract}
-
-Network intrusion detection systems help to find any security breaches inside the system. Anomaly detection system plays a significant role in recognizing intruders or suspicious activities inside the system, catching unseen and unknown attacks. Despite it has the weakness of having high false alarm rate, it can detect zero day attacks effectively which makes it more appropriate in scenarios where new attacks are common incidents. However benchmark anomaly detection datasets on modern traffic data are rare. In this paper, we have  worked on a data set\cite{moustafa2015unsw}~that reflects modern day network traffics. We have proposed  an ensemble based machine learning for anomaly detection from the network traffic. We have presented our results in terms of detection rate and accuracy. Our results outperforms the state of the art model proposed by Moustofa et al.~\cite{moustafa2018anomaly}.
+Anomaly detection system plays a significant role in recognizing intruders or suspicious activities inside the system, detecting unseen and unknown attacks. In this paper, we have worked on a benchmark dataset UNSW-NB15, that
+reflects modern-day network traffic. Previous works on this dataset lacked proper validation approach, followed only one evaluation setup which made it difficult to compare their results with others using same dataset with different validation steps. In this work, we have used a machine learning classifier LightGBM to perform binary classification on the dataset. We have performed different experimentation setups. Using ten-fold cross-validation on the train,
+test and combined (training and test) dataset, our models have achieved 97.21\%, 98.33\% and 96.21\% f1\_scores, respectively. Also, the
+ model fitted only on train data, achieved 92.96\% f1\_score on the separate test set. We have presented complete comparisons with previous works using all performance metrics. We have shown our model outperformed them in most metrics and thus can be used to detect network anomalies better.
 \end{abstract}
 
 \begin{IEEEkeywords}
-anomaly, machine learning, network
+anomaly detection, machine learning,  network security.
 \end{IEEEkeywords}
 %------------------------ Into \input{introduction.tex}
 
 \section{Introduction}
+As web applications are getting increasingly popular, the Internet has become a necessity in our day-to-day life. As a
+consequence, network systems are being targeted more by attackers with malicious intents. To detect intruders in a
+network system, there are generally two approaches: signature-based and anomaly-based detection.  maintain a database of previously known attacks and raise alarms when any match is found with the analyzed
+ data. However, Signature-based
+detection techniques  are vulnerable to zero-day attacks.
 
-As web applications are being increasingly popular, internet has become a necessity in our day to day life. As a consequence, network systems are being targeted more by attacker with malicious intents. As stated in Verizon's Data Breach Investigation Report 2014, 63,437 security breaches carried out by hackers (Verizon's data breach investigation report, 2014 \footnote{http://www.verizonenterprise.com/DBIR/2014}). Also hacking tools are being more available.
+An anomaly in a network means a deviation of traffic data from its normal pattern. Thus, anomaly detection techniques
+have the advantage of detecting zero-day attacks. However, in a complex and large network system,  it is not easy to define a set of valid requests or normal behavior of the endpoints. Hence, anomaly detection faces the disadvantage of
+having a high false-positive error rate (events erroneously classified as attacks). There are different types of anomalies that can be mapped with different types of attacks. According to Ahmed et al.\cite{ahmed2016survey},
+the main attack types are DoS, Probe, User to Root (U2R) and Remote to User (R2U) attacks. They\cite{ahmed2016survey} mapped the point
+anomaly with the U2R and the R2U attacks, DoS attack to the collective anomaly and Probe attack to the contextual anomaly.
 
-To detect intruders in network system, there are generally two approaches : signature based and anomaly based. Signature based systems maintains database of previously known attacks and raise alarms in if when any match is found with the analyzed data. However they are vulnerable  to zero-day attacks.
+In recent years, machine learning and deep learning have become increasingly popular. They have been applied to
+different anomaly and intrusion detection systems %\cite{fernandes2019comprehensive}, \cite{chalapathy2019deep}.
+In many cases, they have outperformed the previous state-of-the-art models.
 
-Anomaly based detection (also known  as outlier detection, novelty detection, deviation detection, exception mining) is based on normal behaviour parameters and utilizes them to pinpoint any action that deviates significantly from normal behaviour. An anomaly in a network means deviation of traffic data from its normal pattern. So anomaly detection techniques has the advantage of detecting zero-day attacks. However in a complex and large network system it is not easy to define a set of valid requests or normal behavior. So anomaly detection faces the disadvantage of having high false positive rate error (events erroneously classified as attacks) .
-
-Evaluating Network Intrusion Detection Systems (NIDS) using the existing benchmark data sets of KDD99 and NSLKDD does not reflect satisfactory results due to their lack of modern attack styles, traffic scenarios. To address these issues, the UNSW-NB15 data set was introduced by moustafa et al.~\cite{moustafa2015unsw}. This dataset represents a hybrid of real world and modern synthesized attack of network. It is a labeled dataset where supervised learning methods can be applied.
-
-The state of the art work on this dataset is done in \cite{moustafa2018anomaly}, where they used a beta mixture model. Mixture models are probabilistic models for representing sub-populations within an overall population. After increasing weight (w) to 3, their model reaches upto 93.4\% accuracy, 92.7\% detection rate and 5.9\% false positive rate. Also in \cite{nawir2018multi}, the authors worked on multiclass classification of this dataset using AODE, an online learning algorithm.
-However, to best of our knowledge, using recent machine learning and deep learning based techniques extensively on this dataset is yet to be explored. More over the the  false positive rate is quite high in~\cite{moustafa2018anomaly}. 
-
-Our objective is to improve the detection  detection rate of  by using techniques, such as boosting or ensemble of multiple models that is being used frequently to make models more robust and general. 
-
-In this paper, we have proposed an ensemble-based anomaly detection model trained and tested on  the unsw-nb15 dataset \cite{moustafa2015unsw}. This model outperforms the state of the art \cite{moustafa2018anomaly} in terms of detection rate (DR) and accuracy. Our model achieved 97.82\% DR , where the previous best is 92.70\%. Our achieved accuracy is 93.69\%, where previous best is 93.40\%. However, our model has higher false positive rate 15.11\%, compared to their 5.90\% , making the model prone to false alarms.
-
-
-We hypertuned common machine learning and deep learning based models on the dataset. Then ensemble the best performing models using another neural network based model to give the final output. Our ensembled models are RandomForest, GradientBoosting, XGB, LightGBM, Neural Network(dense layer based).
-
-The rest of the paper is organized as follows. In Section \ref{}, we have  propose our detection methodology. Details about the dataset and performance metrics are described in Section~\ref{sec:exp}. Results of our approach are presented in Section~\ref{sec:result}. Finally, Section \ref{sec:conclusion} has the concluding remarks.
-
-We have discussed the experiments and their results in details in \ref{results}. Our comparisons with the current state of the art is given in \ref{comparison_table}.
-
-
-Also being able to detect more attacks will make the model more vigorous against malicious traffics.
+As UNSW-NB15\cite{moustafa2015unsw} is a benchmark anomaly detection dataset, numerous studies have been performed on it.
+However, as shown in Section \ref{relatedWorks}, to evaluate the same dataset different setups were adopted.
+Also, works that followed the same experimentation setup did not compare their results with prior works in some cases (for example, \cite{Kanimozhi2019UNSW-NB15} and  \cite{nawir2019effective} did not compare their results with \cite{koroniotis2017towards}), thereby making it difficult to validate their improvements. There are several works~
+%\cite{mogal2017nids}
+\cite{Kanimozhi2019UNSW-NB15} that mentioned near-perfect detection scores which makes us wonder whether they have any limitations. Most of the works \cite{nawir2019effective} \cite{Kanimozhi2019UNSW-NB15}, \cite{meghdouri2018analysis}  followed only one validation setup, making it impossible to compare their works with the ones, having the same dataset with different validation setup.
 
 
-%-------------------------------------------------------------
-%--- \input{motivation.tex}
-%-------------------------------------------------------------
-%\input{background_study.tex}
-\section{Background Study}
- There are different type of anomalies that can be mapped with different types of attacks~\cite{ahmed2016survey}. The main attacks are DoS, Probe, U2R and R2U attack.
 
-The different types of anomalies are as follows:
+Our work differs from the previous ones in the the following ways.
 \begin{itemize}
-    \item \textbf{Point anomaly}:Rather than on the whole dataset, point anomaly occurs on a specific data instance.
-    \item \textbf{Contextual anomaly}: When data instances are anomalous in a specific context, that can be called contextual anomaly. Like during season of festivities, credit card transactions are higher than regular. But it is not the same case for a non-festive season. High expenditure in a non-festive season can be pointed as a contextual anomaly. Occurrence of contextual anomalies depends on the availability of context attributes in the data. ~\cite{chandola2009anomaly}.
-    \item \textbf{Collective anomaly}: When a collection of similar kind of data instances act anomalously with respect to the whole dataset, then it can be deemed as collective anomaly~\cite{ahmed2016survey}.
-    
+    \item We have provided a through study of the UNSW-NB15 dataset with feature engineering, preprocessing, selection. In earlier studies, we did not find any mention of feature engineering to improve results.
+    \item We have explored the performance of a boosting algorithm in binary classification on the dataset following different experimentation setups from prior studies. In prior studies, we have found each work focused on only one evaluation process.
+    \item We have compared our results with prior state-of-the art techniques  with respect to all related performance metrics.
 \end{itemize}
 
-\begin{figure}[tb]
-  \includegraphics[width=\linewidth]{point.JPG}
-  \caption{C is showing point anomaly.}
-  \label{fig:point}
-\end{figure}
+% Brief summary of major findings of results
+Our results show that  feature engineering can make the model more generalized, thereby improving performance on separate test data.     Our proposed model can better predict network anomaly than normal records. Our accuracy and f1\_score are 91.95\% and 92.96\%, respectively on the separate test dataset.
 
-\begin{figure}[bth]
-  \includegraphics[width=\linewidth]{contextual.JPG}
-  \caption{Contextual anomaly.}
-  \label{fig:point}
-\end{figure}
 
-\begin{figure}[h]
-  \includegraphics[width=\linewidth]{collective.JPG}
-  \caption{4 red points are collectively showing anomaly.}
-  \label{fig:point}
-\end{figure}
+%Application of this work
+Our work can help in detecting  unseen anomaly attacks better having very few false alarms.  Our different experimentation setups will help visualize the impact of validation strategies on the model performance of this dataset.
 
-There are different types of  attacks as follows:
 
-\begin{itemize}
-    \item \textbf{DoS attack}: DoS or Denial of Service represents the type of attack where the attacker makes a machine or resource unavailable to the legit users by blocking it intentionally through flooding. This attack keeps the memory resources of the server full so that legitimate user requests can not get through. Therefore, the user requests are denied.
-    \item \textbf{Probe attack}: This type of attack is used to gather information about a targeted network or host and, more formally, for reconnaissance purposes ~\cite{ahmed2016survey}. This is used to know about the number \& type of machines connected in the network \& to know about installed software in the host machine. This is the step before an actual attack.
-    \item \textbf{User to Root (U2R)}: When attacker wants to gain illegal access to an administrative account, U2R attack is used. Attacker can use social engineering approach or password sniffing \& being successful on those efforts, can access a normal user account. After gaining access in normal account \& exploiting vulnerabilities, attacker can gain the privilege of a super user.
-    \item \textbf{Remote to User (R2U)}: It is launched when an attacker wants to gain local access as a user of a targeted machine to have the privilege of sending packets over its network (also known as R2L) ~\cite{ahmed2016survey}. Normally the attacker uses a trial and error method to guess the password. In some sophisticated attacks, attacker installs a sniffing tool to capture the password before going through the system.
-\end{itemize}
-
-Ahmed et al. ~\cite{ahmed2016survey} mapped the point anomaly with the U2R \& the R2U attacks. These type of attacks are condition specific and are hard to launch compared to other attacks. They mapped DoS attack to collective anomaly ~\cite{ahmed2014network} and Probe attack to contextual anomaly. DoS attack is specified by the collective attack of same nature. That is why it is mapped to collective anomaly as numerous connection requests are sent to deliver this attack. As probing is done on specific intention of gathering information, it is mapped with contextual anomaly.
-
-\begin{figure}[b]
-  \includegraphics[width=\linewidth]{DOS2.JPG}
-  \caption{DOS attack.}
-  \label{fig:DOS}
-\end{figure}
-
-%---------------------------------------
-%\input{related_works.tex}
-\section{Literature Review}
-Anomaly detection techniques can be classified into  four major  categories~\cite{ahmed2014network} as follows:
-
-\begin{itemize}
-\item Classification based techniques
-\item Statistical based techniques
-\item Clustering based techniques
-\item Information Theory based techniques
-\end{itemize}
-
-Classification based techniques rely on experts' extensive knowledge of the characteristics of network attack.
-SVM, Rule-based, Neural Network based techniques are under this type. This type of techniques rely on the normal traffic activity profile that builds the knowledge base and consider activities that deviates from baseline profile as anomalous. The advantage of this type of technique is they have ability to detect novel attacks provided that they show an ample deviation. The common disadvantage is that the normal profiles not included in the knowledge base will create false alarms.
-
-Eskin et al. ~\cite{eskin2002geometric} used the concept of the unsupervised SVM to detect anomalous events. The algorithm finds hyper planes which separate the data instances from their origins with the maximal margin and then an optimization problem is solved to determine the best hyper plane. Hu et al. ~\cite{hu2003robust} presented an anomaly detection method which ignores noisy data is developed using the Robust SVM (RSVM).\\
-
-Practically, training data often contain noise. This invalidates the main assumption of the SVM that all the sample data for training are independently and identically distributed. As a result, the standard SVM results in a highly non-linear decision boundary which leads to poor generalization.
-In this scenario, the RSVM incorporates the averaging technique in the form of a class centre to make the decision surface smoother and automatically control regularization. In addition, the number/ quantity of support vectors in the RSVM is significantly less than the standard SVM which results in a reduced run time
-
-One of the recent works on NSL-KDD (2009) dataset is done by Yin et al. ~\cite{yin2017deep}.They used a deep learning using recurrent neural networks (RNN). They found that RNN based approach gives superior performance to other classical machine learning approaches.
-They have shown that their model can attain 81.29\% accuracy.
-
-Another recent research done by Zhu et al. ~\cite{zhu2018deep} also uses a deep learning based approach. They used the attention-base Multi-Flow LSTM. LSTM is used to find the hidden temporal correlation between traffic flows. Here previous traffic flows are used as auxiliary features. They used CICIDS2017 dataset which included up-to-date common attacks.
-
-One of the major problems in the field of anomaly detection based intrusion detection is want of benchmark dataset. Moustafa and Slay discussed about the new UNSW-NB15 dataset in ~\cite{moustafa2015unsw}. Their focus was on the point that the other datasets were not enough to tackle the modern low footprint attacks. They have also done a statistical analysis of the UNSW-NB15 dataset and compared it with the KDD99 dataset in ~\cite{moustafa2016evaluation}. Here they addressed three issues, lack of modern low footprint attack, lack of modern traffic scenarios \& the difference in the distribution of training and testing sets. According to them these are the major issues with the benchmark KDD99 \& NSLKDD datasets.
-
-In ~\cite{moustafa2018anomaly}, Moustafa, Nour, et al. developed an anomaly detection system using beta mixture model. They evaluated their method on UNSW-NB15 dataset. They mentioned three components of anomaly detection system. They are data source, data pre-processing and decision-making method. Accuracy increased from 84.2 to 93.4 while the w value increased from 1.5 to 3. They have also shown that their BMM-ADS technique comes with higher detection rate (DR) \& lower false positive rate (FPR) than recent 3 methods evaluated on this dataset, Multivariate Correlation Analysis ~\cite{tan2014system} (DR 88.3 \& FPR 11.6), Artificial Immune System ~\cite{saurabh2016efficient} (DR 83.5 \& FPR 15.7), filter-based Feature Selection ~\cite{ambusaidi2016building} (DR 90.4 \& FPR 8.5). They shown their algorithm has the detection rate \& false positive rate of 92.7 \& 5.9~\cite{moustafa2018anomaly} respectively.
-
-In ~\cite{nawir2018multi}, Nawir et. al. gave an algorithm Online Average One Dependence Estimator (AODE) for multi-classification of UNSW-NB15 dataset that is high in accuracy with a low false alarm rate (FAR). This was built to overcome some issues like the nature of data (complex data which can be represented into more than two classes), dynamical data in a network system, and frequent update (for streaming data that need a
-fast processing).
-
-Moustafa, Nour et. al. have done some other works on the UNSW-NB15 dataset ~\cite{moustafa2018ensemble, moustafa2018generalized, moustafa2018network}.
-
-\subsection{Current limitations and our contributions}
-When studying current works we found that
-\begin{enumerate}
-    \item Machine learning and deep learning techniques haven't yet been extensively applied to this dataset.
-    \item Ensemble technique, which mixes results from multiple models to make the final model more robust and general, is yet to apply on this dataset.
-    \item Results on this dataset might be improved using the previous techniques. Enabling the model to detect more anomalies.
-\end{enumerate}
-
-So our contribution is this work is :
-\begin{enumerate}
-    \item Implementing machine learning and deep learning models with this dataset
-    \item Ensemble the best performing models
-    \item Comparison of latest machine learning techniques with previous statistic based technique at detecting anomalies
-\end{enumerate}
+The rest of the paper is organized as follows. In Section~\ref{relatedWorks},  recent  works related to NIDS on the UNSW-NB15 dataset are listed. Our proposed methodology is explained in
+Section ~\ref{methodology}. In Section \ref{results}, we have described the experimentation setups and our results as well as some comparisons with the prior state-of-the-arts.
+The rest of the comparisons regarding evaluating on train and test data, cross validation approaches are shown in Section
+\ref{comparison}. Finally, Section~\ref{conclusion} has the concluding remarks.
 
 
 
+%---- Related works ------------------------
+%---- Related works ------------------------
+%---- Related works ------------------------
 
-%-------------------------------------------------------------
-\input{methodology.tex}
+\section{Related works}
+\label{relatedWorks}
 
-\section{Proposed Approach}
+For network intrusion detection KDDCUP99, NSL-KDD, DARPA, UNSW-NB15 are among the benchmark dataset. As a popular dataset, we focus on binary classification of UNSW-NB15 dataset~\cite{moustafa2015unsw}  which is used in  several anomaly detection works. Based on model evaluation process, we have divided them into several parts.
+
+\subsection{Random train test}
+Moustafa et al.\cite{moustafa2017hybrid} used central points of attribute values and Association Rule Mining for feature
+selection on a high level of abstraction from datasets UNSW-NB15 and NSL-KDD. They partitioned the datasets into train test following an equation and evaluated performance using Expectation-Maximisation clustering (EM), Logistic Regression (LR) and Naïve Bayes (NB).
+%The LR produced the best results on the two datasets with accuracy and FAR, 83\% and 14.2\% on UNSW-NB15 dataset, 82.1\% and 17.5\% on NSL-KDD dataset.
+Moustafa et al. \cite{moustafa2018anomaly} also proposed a beta mixture
+model-based anomaly detection system on the UNSW-NB15 dataset. They first selected eight features from the dataset,
+then randomly selected samples from it.
+% The best result had accuracy 93.4\%, detection rate 92.7\% and false positive rate 5.9\%.
+In another work, Moustafa et al. \cite{moustafa2019holistic} selected random samples from
+the UNSW-NB15 dataset and ran ten-fold cross-validation on it. % They found the LogisticRegression classifier to achieve the best result with 95.6\% accuracy and 5.6\% false alarm rate.
+
+\subsection{Validation on same data used for training}
+Mogal et al.\cite{mogal2017nids} used machine learning classifiers on both UNSW-NB15 and KDDCUP99 datasets.
+They achieved nearly 100\% accuracy on both datasets using Naive Bayes and Logistic Regression on train data. Kanimozi et al. \cite{Kanimozhi2019UNSW-NB15} chose the best four features of
+the UNSW-NB15 dataset using the RandomForest classifier. They also used a Multi Layer Perceptron to show how neural
+networks would perform on this dataset.
+
+\subsection{Cross validation}
+Koroniotis et al.\cite{koroniotis2017towards} selected the top ten features of the UNSW-NB15 combined (train+test)
+dataset using Information Gain Ranking Filter. Then they ran ten-fold cross-validations using machine learning techniques.
+Among the four techniques (ARM, DT, NB, ANN) applied, DT (Decision Tree C4.5 Classifier) performed the best at
+ distinguishing between Botnet and normal network traffic.
+
+ Suleiman et al. \cite{suleiman2018performance} explored the performance of machine learning classifiers on benchmark
+and new dataset (UNSW-NB15, NSL-KDD, and Phishing) using ten-fold cross-validation. They found the RandomForest
+classifier to perform best. All the experiments were done using the WEKA tool.
+% on the NSL-KDD dataset with accuracy 99.76\%, on UNSW-NB15 with accuracy 90.14\%. For the Phishing dataset J48 classifier performed best with accuracy 90.76\%.
+
+Nawir et al. \cite{nawir2019effective} applied ten-fold cross-validation on the binary classification of the combined
+(train+test) dataset by using the WEKA tool. They also compared centralized and distributed AODE algorithms based on
+accuracy against the number of nodes.
+
+ Meftah et al. \cite{meftah2019network} applied both binary and multiclass
+classification on the UNSW-NB15 dataset. They found for binary classification SVM performs the best in ten-fold
+cross-validation and decision tree (C5.0) for multiclass classification.
+% with 82.11\% accuracy and decision tree (C5.0) perform the best for multiclass classification with 86\% f-measure and 85.41\% accuracy on train data.
+Hanif et al. \cite{hanif2019intrusion} used ANN(Artificial Neural Network)
+on the same dataset. The neural network had one hidden layer and it achieved an average 84\% accuracy and less
+than 8\% false-positive rate in repeated cross-validation. They compared their performance with prior works on the
+NSL-KDD dataset, instead of works on the same dataset.
+
+ Meghdouri et al. \cite{meghdouri2018analysis} applied feature preprocessing and principal component analysis on the
+ UNSW-NB15 dataset. Then performed five-fold cross-validation using a RandomForest classifier.
+ % and achieved 84.9\% f-measure.
+
+\subsection{Validation on separate test data}
+In \cite{moustafa2016evaluation} Moustafa et al. analyzed the statistical properties of the UNSW-NB15 dataset. The complexity of the dataset was evaluated using
+five techniques (DT, LR, NB, ANN and EM clustering). Here, based on the performance results UNSW-NB15 was found to be
+more complex compared to the KDD99 dataset.
+
+Vinaykumar et al. \cite{vinayakumar2019deep} used both classical machine learning classifiers and deep neural networks on several intrusion detection datasets. The classical models performed much better than the neural network models.
+% Their best DNN performance on test dataset was 79.4\% accuracy and 80.2\% f1\_score. However, their RandomForest model achieved 90.2\% accuracy and 92.4\% f1\_score which is far better than the deep neural network model.
+Dahiya et al. \cite{dahiya2018network} applied feature reduction techniques (CCA, LDA) on train and test dataset. They worked on both larger and smaller version of UNSW-NB15 dataset. Bhamare et al. \cite{bhamare2016feasibility} tested the robustness of machine learning models in cloud scenarios. So they trained classifiers on UNSW-NB15 dataset and tested them on a cloud security dataset ISOT. They found that these models do not perform well in a different environment.
+
+\subsection{Others}
+Viet et al. \cite{viet2018using} used deep learning model on the UNSW-NB15 and NSL-KDD datasets only to detect network scanning attacks. In UNSW-NB15 as the scanning types are
+labelled altogether, so they applied binary classification for it.
+% Using Deep Belief Network, they achieved TPR and FAR, 99.86\% and 2.76\%  on UNSW-NB15 dataset, 99.458\% and 2.71\% on NSL-KDD dataset.
+% Moustafa et al. \cite{moustafa2015significant} studied the significant features of the UNSW-NB15 and KDD99 dataset. The results show the original KDD99 attributes are less efficient than the replicated UNSW-NB15 attributes of the KDD99 data set.
+% Belouch et al. \cite{belouch2018performance} used machine learning classifiers to detect network intrusions on the UNSW-NB15 dataset on Apache Spark.
+% Their RandomForest classifier achieved 97.49\% accuracy on the train dataset.
+
+To the best of our knowledge, there has been no work that  provided a through study of the UNSW-NB15 dataset with feature engineering to improve results. Moreover, most of the previous works focused on only one evaluation process.
+We have used feature engineering to reduce overfitting, thereby  providing a generalized model. Moreover, we have evaluated our model performance using multiple experimentation setups and provided thorough comparison with prior state-of-the-art techniques.
+
+
+
+%--------------------------------------------
+
+\section{Proposed Methodology} \label{methodology}
+We have targeted only to perform binary classification on the dataset. Kaggle kernels were used for running our models.
+It provided with 4 CPU cores, 16 Gigabytes of RAM when this work was done. In following subsections,  we described how the dataset was prepared for experimentation and the performance metrics used for evaluation.
+
+
 \subsection{Dataset Description}
-UNSW-NB15 dataset is represented as a hybrid of the real normal and modern synthesized attack of
-network data. Since, the dataset is labelled, we have implemented ML algorithms for network anomaly
-detection in supervised learning. For our work, the UNSW-NB15 dataset contains in total 257,673 data instances with 44 features. The total classes of this dataset are 10 classes: one
-is for a normal network data and nine classes of anomalous network data (attacks
-classes). The attacks involved were backdoor, analysis, fuzzers, shellcode, reconnaissance, exploits, DoS, worms , and generic. 
-\begin{table}[ht]
-% this increases the fontsize used in table
-\normalsize
+We have used the UNSW-NB15 dataset\cite{moustafa2015unsw} which is a recent benchmark dataset for NIDS.
+It was designed at the Cyber Range Lab of the Australian Center of Cyber Security. Compared to other existing datasets (such as KDDCup99, NSL-KDD, DARPA),  UNSW-NB15 dataset is more recent and better reflects modern network traffic. UNSW-NB15 represents nine major families of attacks by utilizing the IXIA PerfectStorm tool.
+The main data set contains 2,540,044 observations. A part of this data set was
+divided into train and test sets by the authors, which has been used in this work. The dataset description is shown in Table \ref{datasetDescription}. We have considered binary classification for this study.
+Hence, we have only predicted whether the record is attack type or normal.
 
+\begin{table}
+\normalsize
 \centering
-\caption{UNSW-NB15 dataset description}
-\label{unsw_nb15_des}
-% increases cell padding
+\caption{Dataset Description}
+\label{datasetDescription}
 \renewcommand{\arraystretch}{1.2}
 
-\begin{tabular}{|C{3cm}|C{1.6cm}|C{1.6cm}|}
+\begin{tabular}{|C{3cm}|C{2cm}|C{2cm}|}
 \hline
-\textbf{Attack type} & \textbf{Train} & \textbf{Test} \\ \hline
-Normal & 37000 & 56000  \\ \hline
-Generic  &         18871 & 40000 \\ \hline
-Exploits  &        11132 & 33393 \\ \hline
-Fuzzers    &        6062 & 18184 \\ \hline
-DoS         &       4089 & 12264 \\ \hline
-Reconnaissance &    3496 &  10491 \\ \hline
-Analysis    &        677 &  2000 \\ \hline
-Backdoor     &       583 & 1746 \\ \hline
-Shellcode     &      378 & 1133 \\ \hline
-Worms         &       44 &  130 \\ \hline
-\textbf{Total} & \textbf{82322}  & \textbf{175341} \\ \hline
+ \textbf{Type} & \textbf{Train} & \textbf{Test} \\ \hline
+Normal & 56,000 & 37,000 \\ \hline
+Anomaly & 119,341 & 45,332 \\ \hline
+\textbf{Total}  & \textbf{175,341} & \textbf{82,332} \\ \hline
 \end{tabular}
 \end{table}
 
 
-\subsection{Pre-processing}
-\subsubsection{Dropping unnecessary columns}
-We dropped id columns from both train and test dataset as those can't be learned as features. Also source and destination IP address and port no was excluded from feature set.
+\subsection{Preprocessing \label{preprocessing}}
+We have performed the preprocessing on the data set using the following steps :
 
-\subsubsection{Numericalization}
-As machine learning requires input data to be in numeric format, we converted each categorical column into numeric by creating binary columns for each of their attributes. However test set had 6 nominal values which never appeared in train dataset. They are PAR, ECO, URN, NO in state column and icmp, rtp in protocol column. As they were absent in train data, model had no way of learning from them. So we have dropped the binary columns for these labels. In final , we had 188 features in our train data set.
+\subsubsection{Dropping unnecessary columns}
+We have dropped id column data as it can not be learned as a feature. Also, attack\_cat as we are not doing multi-class
+classification. And label column is our target. So among 45 features, 42 were left after dropping these three.
+
+\subsubsection{Feature engineer categorical columns}
+We have found many categorical labels to have very low frequency. To make it easier for the model to learn from these
+categorical features, labels with low frequency were converted into a single label. For state feature, except
+the top five labels by frequency ('FIN', 'INT', 'CON', 'REQ', 'RST') other labels were converted into label 'others'.
+Similarly, for service column labels except '-', 'dns', 'http', 'smtp', 'ftp-data', 'ftp', 'ssh', 'pop3' were converted
+into 'others' label. For proto column 'igmp', 'icmp', 'rtp' labels were combined into label 'igmp\_icmp\_rtp'.
+Then labels except 'tcp', 'udp', 'arp', 'ospf', 'igmp\_icmp\_rtp' were converted into label 'others'. Before this, test data had new categorical values present. However, after this preprocessing, categorical value sets for train and test became same.
+
 
 \subsubsection{Scaling}
-We applied standard scaling using StandardScaler from sklearn's preprocessing library. This scaler calculates the mean and standard deviation of training  samples and converts them using the following equation: 
+We have applied StandardScaler from sklearn's preprocessing library on all non-categorical features. It was
+fitted on the train data, then the fitted scaler was used to covert both train and test data. It converts values
+using the following equation:
 \begin{equation}
-    x = \frac{x-mean}{standard\:deviation}
+    x = \frac{x-\mu}{\sigma}
 \end{equation}
 
+where $\mu$ is the mean value and $\sigma$ is the standard deviation.
+
+\subsubsection{Feature Selection}
+We have used the RandomForest classifier of sklearn with default parameters to calculate feature importance on the
+train dataset. We have first preprocessed dataset using previous steps. Then averaged feature importance over ten-fold
+cross-validation. We have converted the values into percentages, for easier understanding. Then sorted them in descending order.
+From there we have chosen to drop features with less than 0.5\% importance value. The dropped 7 features are response\_body\_len,
+spkts, ct\_flw\_http\_mthd, trans\_depth, dwin, ct\_ftp\_cmd, is\_ftp\_login. In table \ref{featureImportance}
+we have shown the chosen features with corresponding importance.
+
+\begin{table}
+\normalsize
+\centering
+\caption{Feature Importance}
+\label{featureImportance}
+% increases cell padding
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|C{2.1cm}|C{1.1cm}|C{2.5cm}|C{1.1cm}|}
+\hline
+\textbf{Feature} & \textbf{Importance} & \textbf{Feature} & \textbf{Importance}\\ \hline
+
+sttl & 16.53& sjit & 1.7  \\ \hline
+ct\_state\_ttl & 11.06& dloss & 1.22  \\ \hline
+dload & 7.2& proto & 1.21  \\ \hline
+dttl & 4.93& djit & 1.14  \\ \hline
+dmean & 4.19& sloss & 0.9  \\ \hline
+ackdat & 3.8& ct\_src\_ltm & 0.83  \\ \hline
+rate & 3.79& ct\_dst\_ltm & 0.83  \\ \hline
+dinpkt & 3.51& stcpb & 0.81  \\ \hline
+sbytes & 3.23& ct\_dst\_sport\_ltm & 0.8  \\ \hline
+smean & 2.85& dtcpb & 0.75  \\ \hline
+sload & 2.72& swin & 0.62  \\ \hline
+state & 2.71& is\_sm\_ips\_ports & 0.57  \\ \hline
+dpkts & 2.59& ct\_src\_dport\_ltm & 0.57  \\ \hline
+tcprtt & 2.49& service & 0.51  \\ \hline
+ct\_srv\_dst & 2.49& spkts & 0.47  \\ \hline
+ct\_dst\_src\_ltm & 2.43& ct\_flw\_http\_mthd & 0.17  \\ \hline
+sinpkt & 2.41& response\_body\_len & 0.16  \\ \hline
+ct\_srv\_src & 2.2& trans\_depth & 0.14  \\ \hline
+dbytes & 1.93& dwin & 0.02  \\ \hline
+synack & 1.76& ct\_ftp\_cmd & 0.01  \\ \hline
+dur & 1.76& is\_ftp\_login & 0.01  \\ \hline
+
+\end{tabular}
+\end{table}
+
+
+\subsubsection{OneHotEncoding}
+We have used pandas library to OneHotEncode all the categorical features. It became possible as after using feature engineering, categorical value sets became same in train and test dataset. The final number of features in our dataset is 53.
+
+
 \subsection{Evaluation metrics}
-There are 4 important terms need to be discussed before going into the next phase:
+Here, we have discussed all the performance metrics used to compare the performance of our approach with previous works.
+%All the metrics were calculated using the sklearn.metrics module.
+
 \begin{itemize}
-    \item \textbf{True Positives (TP)} : The cases in which we predicted YES and the actual output was also YES.
-    \item \textbf{True Negatives (TN} : The cases in which we predicted NO and the actual output was NO.
-    \item \textbf{False Positives (FP)} : The cases in which we predicted YES and the actual output was NO.
-    \item \textbf{False Negatives (FN)} : The cases in which we predicted NO and the actual output was YES.
+    \item \textbf{True Positives (TP)}: The cases in which YES was predicted and the actual output was also YES.
+    \item \textbf{True Negatives (TN}: The cases in which NO was predicted and the actual output was NO.
+    \item \textbf{False Positives (FP)}: The cases in which YES was predicted and the actual output was NO.
+    \item \textbf{False Negatives (FN)}: The cases in which NO was predicted and the actual output was YES.
 \end{itemize}
 
 \subsubsection{Accuracy}
-It is the ratio of number of correct predictions to the total number of input samples
+It is the ratio of the number of correct predictions to the total number of input samples.
 \begin{equation}
     Accuracy = \frac{TP+TN}{TP+TN+FP+FN}
 \end{equation}
 
 \subsubsection{Precision}
-It is the number of correct positive results divided by the number of positive results predicted by the classifier.
+It is ratio of the number of correct positive results to the number of positive results predicted by the classifier.
 \begin{equation}
-    precision = \frac{TP}{TP+FP}
+    Precision = \frac{TP}{TP+FP}
 \end{equation}
 
-\subsubsection{Recall or DR(Detection Rate)}
-It is the number of correct positive results divided by the number of all relevant samples (all samples that should have been identified as positive)
+\subsubsection{Recall or detection rate or True Positive Rate)}
+It is the ratio of the number of correct positive results to the number of all relevant samples (all samples that should
+have been identified as positive).
 \begin{equation}
     recall = \frac{TP}{TP+FN}
 \end{equation}
 
-\subsubsection{FPR}
-The false positive rate (FPR) is the proportion of incorrectly identified observations, that is 
+\subsubsection{F1\_score}
+The harmonic mean of precision and recall.
+\begin{equation}
+    f1\_score = 2 * \frac{1}{\frac{1}{precision}+ \frac{1}{recall}}
+\end{equation}
+
+\subsubsection{False Positive Rate (FPR)}
+It is the proportion of incorrectly identified observations.
 \begin{equation}
     FPR = \frac{FP}{FP+TN}
 \end{equation}
 
-\subsubsection{F1-score}
-F1-score is the harmonic Mean between precision and recall.
+\subsubsection{False Alarm Rate (FAR)}
+It represents the probability that a record gets incorrectly classified.
 \begin{equation}
-    f1-score = 2 * \frac{1}{\frac{1}{precision}+ \frac{1}{recall}}
+    FAR = \frac{FP+FN}{FP+FN+TP+TN}
 \end{equation}
 
+\subsubsection{ROC AUC}
+It computes the Area Under the Receiver Operating Characteristic Curve (ROC AUC) from prediction scores.
 
-%\subsubsection{AUC}
+\subsubsection{Time (sec)}
+As run time is an important factor in detecting network anomalies, we have determined the time required to run our models.
+%We have used the time library of python for this purpose.
 
 
-%---------------------------- Results  ----------------
-%\input{unsw_nb15.tex}
-\section{Results }\label{results}
-In this section we describe experimentation methods and results of various machine learning based models on unsw-nb15 dataset. In each part we have described the hypertuning part of a model and the best possible results from it. The best results are marked using * in each table.\\
+\section{Experiment and Results \label{results}}
+For evaluating the UNSW-NB15 dataset, ten-fold cross validation was performed on the train dataset using Stratified KFold of the sklearn library with random shuffle true. We have used several popular machine learning classifiers to measure the
+detection performance. The models were run mostly with default parameters. We have set random state to 1 for all of them,
+so that the results are reproducible. All models except LightGBM \cite{ke2017lightgbm}, were from sklearn library
+version 0.23.0. During prediction, for LightGBM we used the best iteration. The used models are listed below with
+important parameters.
+\begin{enumerate}
+    \item LogisticRegression : penalty = l2, max\_iter = 100, solver = lbfgs, C = 1.0
+    \item GradientBoosting: learning\_rate = 0.1, n\_estimators = 100,max\_depth = 3
+    \item DecisionTree: criterion = 'gini', max\_depth = None, max\_features = None,
+    \item RandomForest: n\_estimators = 100, criterion = 'gini', max\_depth = None, max\_features = None
+    \item LightGBM: learning rate = 0.1, objective = binary, metric = binary\_logloss,boost\_from\_average = True,
+    num\_round = 2000, early\_stopping\_rounds = 50.
+\end{enumerate}
 
-\subsection{RandomForestClassifier}
-We used RandomForestClassifier from sklearn.ensemble . Table \ref{rf_table} contains the hyper-tuning results. Base parameters of the classifier are given below.
+Then, we have chosen the best model based on accuracy and f1-score. As shown in Table \ref{crossvalidationWithDifferentModels},
+LightGBM showed the best performance in both accuracy (96.18\%) and f1-score (91.21\%).
+This is because LightGBM follows a more complex leaf-wise split approach rather than a level-wise approach. Hence, it reduces overfitting on train data and improves the validation results.
 
-\begin{table}[H]
+\begin{table}
+\normalsize
+\centering
+\caption{Ten-fold cross validation with different models}
+\label{crossvalidationWithDifferentModels}
+\renewcommand{\arraystretch}{1.2}
+
+\begin{tabular}{|C{2.8cm}|C{2.1cm}|C{2.1cm}|}
+\hline
+\textbf{Metrics(\%)} & \textbf{Accuracy(\%)} & \textbf{F1\_score(\%)} \\ \hline
+LogisticRegression & 93.54 & 95.42 \\ \hline
+GradientBoosting & 94.58 & 96.11\\ \hline
+DecisionTree  & 94.99 & 96.32\\ \hline
+RandomForest  & 96.08 & 97.14 \\ \hline
+LighGBM & 96.18 & 97.21 \\ \hline
+\end{tabular}
+\end{table}
+
+
+\subsection{Validation on same data used for training}
+Mogal et al. \cite{mogal2017nids}, Kanimozhi et al. \cite{Kanimozhi2019UNSW-NB15} evaluated model performance on the
+UNBSW-NB15 dataset without using any cross-validation approach. The same data used for training the model was used for
+validation too. To compare our model's performance with them, we have followed the similar setup. As evident from the
+results shown in table \ref{evaluationOnTrainData}, this type of experimentation setup does not truly reflect model
+performance. As the model overfits on train data, its performance will become very poor on a separate test set. For
+example, we have found our model when overfitted on train data, only achieved 86.88\% accuracy and 89.14\% f-measure on
+test data.
+
+\begin{table}
+\normalsize
+\centering
+\caption{Evaluating model on data used for training}
+\label{evaluationOnTrainData}
+\renewcommand{\arraystretch}{1.2}
+
+\begin{tabular}{|C{3.5cm}|C{1.8cm}|C{1.8cm}|}
+\hline
+\textbf{Metrics(\%)} & \textbf{Train} & \textbf{Test} \\ \hline
+Accuracy & 99.60 & 99.98 \\ \hline
+Precision & 99.52 & 99.97\\ \hline
+Recall  & 99.89 & 99.98\\ \hline
+F1\_score  & 99.71 & 99.98 \\ \hline
+FPR & 0.01 & 0.0004\\ \hline
+AUC & 99.99 & 99.99\\ \hline
+Time(s) & 243 & 237\\ \hline
+\end{tabular}
+\end{table}
+
+
+\subsection{Ten-fold cross validation}
+Ten-fold cross-validation on train, test or combined(train+test) dataset was performed in \cite{meftah2019network},
+\cite{suleiman2018performance}, \cite{nawir2019effective}, \cite{hanif2019intrusion} . We have used the StratifiedKFold
+method of sklearn.model\_selection module with shuffle = True to perform the ten-fold cross validation. Average
+scores achieved in that process is shown in table \ref{tenFoldCrossValidation}.
+
+\begin{table}
 % this increases the fontsize used in table
 \normalsize
-
 \centering
-\caption{RandomForest baseline parameters}
-\label{rf_base_parameters}
+\caption{Ten-fold cross validation}
+\label{tenFoldCrossValidation}
 % increases cell padding
 \renewcommand{\arraystretch}{1.2}
-
-\begin{tabular}{|C{2.6cm}|C{1cm}|C{2.7cm}|C{1cm}|}
+\begin{tabular}{|C{2.3cm}|C{1.3cm}|C{1.3cm}|C{1.8cm}|}
 \hline
-\textbf{parameter} & \textbf{value} & \textbf{parameter} & \textbf{value} \\ \hline
-criterion & ’gini’ &  min\_samples\_split  & 2   \\ \hline
-min\_samples\_leaf & 1 & class\_weight & None  \\ \hline
-max\_features & ’auto’& max\_leaf\_nodes & None  \\ \hline
-%min\_impurity\_decrease & 0.0 & min\_impurity\_split & None  \\ \hline
-bootstrap & True & oob\_score & False  \\ \hline
-warm\_start & False & random\_state & 0  \\ \hline
-%min\_weight\_fraction\_leaf & 0.0 & &  \\ \hline
-\end{tabular}
-\end{table}
-
-% \begin{lstlisting}[language=Python]
-
-% RandomForestClassifier(n_estimators=’warn’, criterion=’gini’, max_depth=None, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_features=’auto’, max_leaf_nodes=None, min_impurity_decrease=0.0, min_impurity_split=None, bootstrap=True, oob_score=False, n_jobs=None, random_state=None, verbose=0, warm_start=False, class_weight=None)
-
-% \end{lstlisting}
-We set prediction threshold at 0.4 for this model.From table \ref{rf_table} we can see that changing max depth didn't have much effect on the model performance except reducing it a bit. However the more we increased the number of estimators after 100 the less the results become.Possibly because model overfits on train data. Also decreasing less than 100 has negative effect on the performance. So the best model was achieved with 100 estimators and max depth at 50.
-
-\begin{table}[H]
-% this increases the fontsize used in table
-\normalsize
-
-\centering
-\caption{RandomForest classifier results}
-\label{rf_table}
-% increases cell padding
-\renewcommand{\arraystretch}{1.2}
-
-\begin{tabular}{|C{2cm}|C{1.2cm}|C{1.6cm}|C{1.6cm}|}
-\hline
-\textbf{n-estimators} & \textbf{depth} & \textbf{accuracy} & \textbf{f1-score} \\ \hline
-50 & 50 & 93.24 & 95.22 \\ \hline
-50 & 150 & 93.33 & 95.27 \\ \hline
-100 & 50 & 93.39* & 95.31* \\ \hline
-100 & 150 & 93.33 & 95.27 \\ \hline
-200 & 50 & 93.36 & 95.30 \\ \hline
-200 & 150 & 93.34 & 95.29\\ \hline
-500 & 50 & 93.03 & 95.31 \\ \hline
-500 & 150 & 93.01 & 95.29 \\ \hline
-\multicolumn{4}{l}{$*$ best parameters}
-\end{tabular}
-\end{table}
-
-\subsection{GradientBoostingClassifier}
-We used GradientBoostingClassifier from sklearn.ensemble. It builds an additive model in a forward stage-wise fashion; it allows for the optimization of arbitrary differentiable loss functions. As this is binary classification, in each stage a single regression tree is fit on the negative gradient of the binomial deviance loss function.The base parameters for this model are given in table \ref{gtb_base_parameters}.
-\begin{table}[H]
-% this increases the fontsize used in table
-\normalsize
-
-\centering
-\caption{GradientBoostingClassifier baseline parameters}
-\label{gtb_base_parameters}
-% increases cell padding
-\renewcommand{\arraystretch}{1.2}
-
-\begin{tabular}{|C{2.7cm}|C{1cm}|C{2.6cm}|C{1cm}|}
-\hline
-\textbf{parameter} & \textbf{value} & \textbf{parameter} & \textbf{value} \\ \hline
-learning\_rate & 0.1 & presort & ’auto’ \\ \hline
-n\_estimators & 100 &  subsample & 1.0 \\ \hline
-max\_depth & 3 &  tol & 0.0001 \\ \hline
-random\_state & 0 & max\_features & None \\ \hline
-\end{tabular}
-\end{table}
-
-% \begin{lstlisting}[language=Python]
-
-% GradientBoostingClassifier(loss=’deviance’, learning_rate=0.1, n_estimators=100, subsample=1.0, criterion=’friedman_mse’, min_samples_split=2, min_samples_leaf=1, min_weight_fraction_leaf=0.0, max_depth=3, min_impurity_decrease=0.0, min_impurity_split=None, init=None, random_state=None, max_features=None, verbose=0, max_leaf_nodes=None, warm_start=False, presort=’auto’, validation_fraction=0.1, n_iter_no_change=None, tol=0.0001)
-% \end{lstlisting}
-
-We varied n\_estimators and learning rate for this model. Each estimator has regression trees with max depth 3. We set prediction threshold at 0.5 for this model. From table \ref{gtb_table} we see, the more we increased the number of estimators, the more performance increased. the more general the model became, hence the increase of performance. We didn't increase it further to prevent overfitting. Also decreasing learning rate than 0.1 had negative impact on performance, because the model was learning too slow to converge.
-\begin{table}[H]
-\normalsize
-
-\centering
-\caption{GradientBoosting Classifier results}
-\label{gtb_table}
-\renewcommand{\arraystretch}{1.2}
-\begin{tabular}{|C{2cm}|C{2cm}|C{1.5cm}|C{1.5cm}|}
-\hline
-\textbf{n-estimators} & \textbf{learning rate} & \textbf{accuracy} & \textbf{f1-score} \\ \hline
-100 & 0.01 & 85.42 & 88.74 \\ \hline
-100 & 0.05 & 89.82 & 92.31 \\ \hline
-100 & 0.1 & 92.09 & 94.12 \\ \hline
-200 & 0.01 & 85.53 & 88.8 \\ \hline
-200 & 0.05 & 92.42 & 94.48 \\ \hline
-200 & 0.1 & 92.30 & 94.36 \\ \hline
-500 & 0.01 & 91.26 & 93.44 \\ \hline
-500 & 0.05 & 92.40 & 94.49 \\ \hline
-500 & 0.1 & 92.61* & 94.67* \\ \hline
-\multicolumn{4}{l}{$*$ best parameters}
-\end{tabular}
-\end{table}
-
-\subsection{LightGBM}
-LightGBM is a gradient boosting framework from Microsoft that uses tree based learning algorithms. The baseline parameters are given in table \ref{lgb_table}.
-
-\begin{table}[H]
-% this increases the fontsize used in table
-\normalsize
-
-\centering
-\caption{LightGBM baseline parameters}
-\label{lgb_base_parameters}
-% increases cell padding
-\renewcommand{\arraystretch}{1.2}
-
-\begin{tabular}{|C{3.1cm}|C{.7cm}|C{2.6cm}|C{0.8cm}|}
-\hline
-\textbf{parameter} & \textbf{value} & \textbf{parameter} & \textbf{value} \\ \hline
-bagging\_frequency & 5 & base\_score & 0.9 \\ \hline
-early\_stopping\_round & 100 & num\_boost\_round & 2000 \\ \hline
-boost & gbdt & max\_bin & 255\\ \hline
-objective & binary & seed & 0 \\ \hline
-num\_leaves & 31 & & \\ \hline
-\end{tabular}
-\end{table}
-
-We varied 4 parameters of this model: learning rate, max-depth, bagging fraction, feature fraction. We set prediction threshold at 0.4 for this model. From table \ref{lgb_table} we can see, decreasing learning rate had a decrease in performance too. We found setting constraint on depth giving better results. Among them best results came at depth 10. Also adding fraction less than 1.0 improved classifier performance, this fraction means what fraction of the dataset and features would be used for training in the next iteration. 
-
-\begin{table}[H]
-\normalsize
-
-\centering
-\caption{LightGBM results}
-\label{lgb_table}
-\renewcommand{\arraystretch}{1.2}
-\begin{tabular}{|C{1.4cm}|C{1.2cm}|C{1.6cm}|C{1.2cm}|C{1.2cm}|}
-\hline
-\textbf{learning rate} & \textbf{max depth} & \textbf{bagging and feature fraction} & \textbf{accuracy} & \textbf{f1-score} \\ \hline
-0.1 & 10 & 0.5 & 92.69 & 94.71 \\ \hline
-0.1 & 10 & 1 & 92.75* & 94.78* \\ \hline
-0.1 & 15 & 0.5 & 92.63 & 94.69 \\ \hline
-0.1 & 15 & 1 & 92.59 & 94.67 \\ \hline
-0.01 & 10 & 0.5 & 92.75 & 94.69 \\ \hline
-0.01 & 10 & 1 & 92.55 & 94.59 \\ \hline
-0.01 & 15 & 0.5 & 92.84 & 94.76 \\ \hline
-0.01 & 15 & 1 & 92.59 & 94.62 \\ \hline
-\multicolumn{5}{l}{$*$ best parameters}
-\end{tabular}
-\end{table}
-
-\subsection{XGBClassifier}
-XGBoost is an optimized distributed gradient boosting library designed to be highly efficient, flexible and portable. It implements machine learning algorithms under the Gradient Boosting framework. In this approach we worked on the XGBClassifier from XGBoost.\\
-
-We replaced the base score with 0.9, as it showed a bit improvement on the score. Then we varied n-estimators and learning rate. From table \ref{xgb_table} we can see, performance decreases randomly with the increase of number of estimators. However for learning rate it increased when going from 0.1 to 0.5. However increasing learning rate too much can make the model fail to converge. So for best result we kept the model at 100 n-estimators, 0.5 learning rate and 0.9 base-score. Prediction threshold was set to 0.2 for this model.
-\begin{table}[H]
-\normalsize
-\centering
-\caption{XGB Classifier results}
-\label{xgb_table}
-
-\renewcommand{\arraystretch}{1.2}
-\begin{tabular}{|C{2cm}|C{2cm}|C{1.5cm}|C{1.5cm}|}
-\hline
-\textbf{n-estimators} & \textbf{learning rate} & \textbf{accuracy} & \textbf{f1-score} \\ \hline
-100 & 0.1 & 91.45 & 93.71 \\ \hline
-100 & 0.5 & 92.13* & 94.34* \\ \hline
-500 & 0.1 & 91.94 & 94.23 \\ \hline
-500 & 0.5 & 90.42 & 93.3 \\ \hline
-1000 & 0.1 & 90.98 & 93.64 \\ \hline
-1000 & 0.5 & 90.42 & 93.3 \\ \hline
-\multicolumn{4}{l}{$*$ best parameters}
-\end{tabular}
-\end{table}
-
-\subsection{Artificial Neural Network}
-An ANN is based on a collection of connected units or nodes called artificial neurons, which loosely model the neurons in a biological brain. Each connection, like the synapses in a biological brain, can transmit a signal from one artificial neuron to another. An artificial neuron that receives a signal can process it and then signal additional artificial neurons connected to it.\\
-Here in this experiment we used Keras \footnote{https://keras.io/}, a python deep learning library developed by Google. It is capable of running on top of TensorFlow, CNTK, or Theano.\\
-
-We tried different combination of layers,units of dense and dropout layer.Dense layer is a densely connected neural network layer, which connects every input to every cell unit. Dropout layer randomly sets a fraction of input units to 0, reducing overfit. However if we drop too much that will cause the model to underfit. \\
-
-Our number of epochs were 10 and we took the best model based on validation accuracy. From our results in \ref{nn_table}, we can see increasing input layer size increases model performance, possibly because it helps to learn more from the input data. However using more layers cause the model to overfit, doing well on train data, but reducing performance on test data. Also adding dropout layer didn't solve the issue. So the best model was a NN with 512 dense input units, then 32 dense input units, following the final output unit. All dense layers except the last one used activation method 'relu'.\\
-\begin{table}[H]
-\normalsize
-
-\centering
-\caption{ANN results}
-\label{nn_table}
-\renewcommand{\arraystretch}{1.2}
-\begin{tabular}{|C{5.6cm}|C{1cm}|C{1cm}|}
-\hline
-\textbf{Model architecture} & \textbf{accuracy} & \textbf{f1-score} \\ \hline
-dense(256)dense(32)dense(1) & 91.97 &  94.01 \\ \hline
-dense(256)drop(.2)dense(32)dense(1) & 91.84 & 93.86 \\ \hline
-dense(256)dense(64)dense(32)dense(1)  & 91.82 & 93.84 \\ \hline
-dense(512)dense(32)dense(1)  & 92.05* & 94.06* \\ \hline
-\multicolumn{3}{l}{$*$ best architecture}
+\textbf{Metrics(\%)} & \textbf{Train} & \textbf{Test} & \textbf{Combined}\\ \hline
+Accuracy & 96.18 & 98.18 & 95.19 \\ \hline
+Precision & 96.54 & 98.87& 96.84\\ \hline
+Recall  & 97.89 & 97.80 & 95.58\\ \hline
+F1\_score  & 97.21 & 98.33 & 96.21\\ \hline
+FPR & 7.47 & 1.37 & 5.51\\ \hline
+FAR & 3.82 & 1.83 & 4.81 \\ \hline
+AUC & 99.45 & 99.82 & 99.26\\ \hline
+Time(s) & 628.1 & 281.1 & 838.8\\ \hline
 \end{tabular}
 \end{table}
 
 
-\subsection{Ensemble}
-Ensemble methods is a machine learning technique that combines several base models in order to produce one optimal predictive model. In this part we have taken several of our best performing models and used their predictions to give the final output.
+\subsection{Validation on test data \label{validationResultsOnTest}}
+In this phase we have validated the model trained on train data using the separate test dataset of UNSW-NB15 following
+\cite{moustafa2016evaluation} \cite{bhamare2016feasibility} \cite{vinayakumar2019deep} \cite{dahiya2018network}. As  Meftah et al. \cite{meftah2019network}
+mentioned, some columns have new labels in test data. However, after our feature engineering process in section
+\ref{preprocessing}, we were able to overcome it. For this evaluation specifically, we have found setting parameter
+is\_unbalance: True and learning rate to 0.05 in LightGBM improved prediction performance. The performance metrics
+are shown in table \ref{validationResult} along with comparisons with prior arts. In table \ref{confusionMatrix}
+we have shown the normalized confusion matrix.
 
-The list of the models with their hyper-tuned parameters is available in table \ref{ensemble_table}.
-\begin{table*}[h]
+\begin{table}
 \normalsize
 \centering
-\caption{Models used in ensemble}
-\label{ensemble_table}
+\caption{Validation on test data}
+\label{validationResult}
 \renewcommand{\arraystretch}{1.2}
-\begin{tabular}{|C{3cm}|C{4cm}|C{3cm}|C{2.5cm}|}
+\begin{tabular}{|C{2cm}|C{1.2cm}|C{1.3cm}|C{1.7cm}|}
 \hline
-\textbf{Model} & \multicolumn{3}{c}{\textbf{parameters}}  \\ \hline
-RandomForest & n\_estimators=100 & max\_depth=50 & random\_state=0\\ \hline
-GradientBoosting & n\_estimators=500 & learning\_rate=0.1 & random\_state=0 \\ \hline
- XGBClassifier & n\_estimators=1000 & learning\_rate=0.1 & base\_score=0.9 \\ \hline
-LigtGBM.& bagging\_fraction=0.8 & learning\_rate=0.01 & max\_depth=15 \\ \hline
-Neural Network & dense(512) & dense(32) & dense(1) \\ \hline
+\textbf{Metrics(\%)} & \textbf{Ours} & \textbf{RF\cite{vinayakumar2019deep}} & \textbf{REP Tree\cite{dahiya2018network} }\\ \hline
+Accuracy & 91.95 & 90.3 & 93.56 \\ \hline
+Precision & 89.59 & 98.8 & 83.3\\ \hline
+Recall  & 96.60 & 86.7 & 83.2 \\ \hline
+F1\_score  & 92.96 & 92.4 & 83.25 \\ \hline
+FPR & 13.75 & - & 2.3 \\ \hline
+FAR & 8.05 & - &  - \\ \hline
+AUC & 98.64 & - & - \\ \hline
+Time(s) & 31.44 & - & - \\ \hline
+
 \end{tabular}
-\end{table*}
+\end{table}
 
+Our model outperforms the work of Vinayakumar et al \cite{vinayakumar2019deep} by both accuracy and f1\_score.
+Though Dahiya et al \cite{dahiya2018network} achieved better accuracy than ours, they had near 10\% drop in
+1\_score than our model. In intrusion detection dataset where class distribution is imbalanced, f1\_score is more important.
 
-There are several ways ensemble can be used. Like averaging, voting, stacking, bagging etc. However took the simpler approach, majority voting. Voting works by taking prediction from everyone and giving the output in favour of the class for which most of the models gave same output. After applying voting on the predictions of all models on test data our final result reached 93.69\% accuracy, 93.24\% precision, 97.82\% recall and 95.48\% f1-score on the test dataset. 
-
-\section{Comparison with state of the art}
-Our final model achieves 93.69\% accuracy, 93.24\% precision, 97.82\% recall and 95.48\% f1-score on the separate test dataset. Our ROC-AUC score is 98.45\% which is also very high.\\
-
-Compared to previous works, our model outperforms the state of the art model by Moustafa \textit{et al.}\cite{moustafa2018anomaly} as we can see from table \ref{comparison_table}. However our FPR is 15.11\%, which is higher than theirs, so our false alarm rate is higher than their work.
-
-\begin{table}[H]
+\begin{table}
 \normalsize
 \centering
-\caption{Comparison with state of the art}
-\label{comparison_table}
+\caption{Confusion matrix}
+\label{confusionMatrix}
 \renewcommand{\arraystretch}{1.2}
-\begin{tabular}{|C{2.5cm}|C{3cm}|C{2cm}|}
+\begin{tabular}{|C{2.4cm}|C{2.2cm}|C{2.2cm}|}
 \hline
-Metrics & Moustafa \textit{et al.}\cite{moustafa2018anomaly} & Our\\ \hline
-DR(\%) & 92.70 & 97.82* \\ \hline
-Accuracy(\%) & 93.40 & 93.69* \\ \hline
-FPR(\%) & 5.90*  & 15.11 \\ \hline
-\multicolumn{3}{l}{$*$ better result}
+ & Predicted Normal & Predicted Anomaly \\ \hline
+Actual Normal & 0.86 & 0.14 \\ \hline
+Actual Anomaly & 0.03 & 0.97\\ \hline
 \end{tabular}
 \end{table}
 
 
-We have ensembled several good models into making another model that predicts on test set based on the predictions of these multiple independent models. Though the models themselves aren't able to perform better, together they can detect anomalies that they individually couldn't. \\
-
-However our ensembled model has a greater detection rate which is possible as even if one model fails to detect an anomaly , there are other models those may not fail. Thus this ensembled version detects more connections as anomaly. Which is makes our model do better in terms of detection rate. 
-
-However, as the ensembled model detects more connections as anomaly, it also makes more false alarms, means detects normal connections as anomaly. That is the reason our false positive rate is higher than the previous work.
-
-Also as our models ensembles several models, some of which takes much time to train. So our model will be a much slower one to learn compared to previous statistical based model. Also as our false positive rate is higher our model will tend to make more false alarms, which may be disturbing for the user. But, if the user wants to detect more anomalies than obviously our model would be a better choice.
-
-% \begin{figure}
-% \centering
-%   \includegraphics[scale=0.7,width=\linewidth]{UNSW_NB15_top_models_accuracy.png}
-% \caption{Accuracy on UNSW-NB15}
-% \end{figure}
-
-% \begin{figure}
-% \centering
-%   \includegraphics[scale=0.7,width=\linewidth]{UNSW_NB15_top_models_f_measure.png}
-
-% \caption{F-measure on UNSW-NB15}
-% \end{figure}
-
-%---------------------------- Conclusion ----------------
-%---------------------------- Conclusion ----------------
-%---------------------------- Conclusion ----------------
-
-\section{Conclusion and Future Work}
-In this paper we have introduced an ensemble based machine learning model based on unsw-nb15. Our model outperforms in terms of detection rate and accuracy. However our limitations are model complexity and higher false positive rate.Yet its an indication of success of this kind of technique to go beyond previous state of the art works, which is promising. \\
-In future we plan to investigate how ensemble can improve other anomaly detection works. We also want to explore the results of this technique on multi-class classification on this dataset and others. As some attacks are rarer than others, they are more difficult to detect than other common attacks. So these fields can also be explored, to effectively detect attacks which are harder to recognize.
+\section{Comparison with state-of-the-art models} \label{comparison}
+In this section, we compare our model performance with prior state-of-the-art models on same dataset. We have arranged this section in subsections based on different experimentation setups that was followed in previous works.
 
 
+\subsection{Evaluation on train data}
+Mogal et al.~
+\cite{mogal2017nids} achieved 99.96\% accuracy on the UNSW-NB15 dataset using Naive Bayes and Logistic Regression,
+which did not follow any cross-validation approach. A similar approach was taken by Kanimozhi et al.~\cite{Kanimozhi2019UNSW-NB15} with the best four features chosen using the RandomForest classifier.
+The model achieved 98.3\% accuracy. It is shown in Table~\ref{evaluationOnTrainData} that in the same validation process, our model achieves near-perfect scores on the train and test data. We also did not find any comparison to
+prior state-of-the-art with similar validation process\cite{mogal2017nids} in \cite{Kanimozhi2019UNSW-NB15}.
 
-\bibliography{bibliography} 
+\subsection{Ten-fold cross validation}
+Suleiman et al.~\cite{suleiman2018performance} evaluated performance using ten-fold cross validation on train data.
+They found a Random Forest (RF) classifier to have the best accuracy and f-measure. We have mentioned our model performance
+using same validation process in column train of Table~\ref{tenFoldCrossValidation}. TPR and recall are same; hence, we have mentioned only recall.
 
+
+\begin{table}
+\normalsize
+\centering
+\caption{Performance comparison with \cite{suleiman2018performance}}
+\label{performanceComparisonWithSuleiman}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|C{2.3cm}|C{2.2cm}|C{2.2cm}|}
+\hline
+\textbf{Metrics(\%)} & \textbf{RF \cite{suleiman2018performance}} & \textbf{LightGBM} \\ \hline
+Accuracy & 90.14 & 96.17\\ \hline
+Precision  & 99.8 & 96.54\\ \hline
+Recall  & 97.8 & 97.89\\ \hline
+F1\_score  & 98.7 & 97.20\\ \hline
+FPR  & 0.1 & 7.48\\ \hline
+\end{tabular}
+\end{table}
+
+Meftah et al. \cite{meftah2019network} applied ten-fold cross validation on train dataset and achieved the best accuracy
+82.11\% using SVM classifier. In same validation process, our model accuracy is 96.17\%. Hanif et al.~\cite{hanif2019intrusion}
+applied ten-fold cross validation on the train and test dataset repeatedly using Artificial Neural Network(ANN) and achieved
+average 84\% accuracy, 8\% false positive rate. In similar case, our model performance is better (having 96.18\% accuracy and 7.47\% FPR as shown in Table~\ref{tenFoldCrossValidation}). Though \cite{meftah2019network}\cite{hanif2019intrusion} followed the same experimentation
+setup similar to \cite{suleiman2018performance}, they did not present any comparisons.
+
+Koroniotis et al.~\cite{koroniotis2017towards} performed ten-fold cross validation on the combined dataset.
+The best result was achieved using the Decision Tree C4.5. Our model has shown better performance, having higher accruacy and lower false alarm rates ( see Table \ref{performanceComparisonWithKoroniotis}).
+
+\begin{table}
+\normalsize
+\centering
+\caption{Comparison of our model with Koroniotis et al. \cite{koroniotis2017towards}}
+\label{performanceComparisonWithKoroniotis}
+\renewcommand{\arraystretch}{1.2}
+
+\begin{tabular}{|C{3.3cm}|C{2.2cm}|C{1.5cm}|}
+\hline
+\textbf{Classifier} & \textbf{Accuracy (\%)} & \textbf{FAR(\%)} \\ \hline
+Decision Tree \cite{koroniotis2017towards} & 93.23 & 6.77 \\ \hline
+LightGBM & 95.19 & 4.81 \\ \hline
+\end{tabular}
+\end{table}
+
+Nawir et al. \cite{nawir2019effective} applied a similar ten-fold cross-validation evaluation on the combined dataset
+using the WEKA J48 classifier. They mentioned achieving high accuracy of 98.71\% using the default parameter.
+However, using exactly the same environment for several runs we have found it achieves around 94.6\% accuracy,
+which is lower than ours (95.19\%  accuracy).
+
+\subsection{Five-fold cross validation}
+We have found only Meghdouri et al. \cite{meghdouri2018analysis} to validate using five-fold cross-validation.
+So we did not add any separate section for it, however we have presented our model performance using same validation process
+here in table \ref{performanceComparisonWithMeghdouriTrain} and \ref{performanceComparisonWithMeghdouriTest}.
+Table \ref{performanceComparisonWithMeghdouriTrain} shows our model performance compared to their's on five-fold
+cross validation of train dataset.
+
+Their model achieved higher accuracy (99\%) compared to ours (96.18\%). However, for precision, recall and
+f1\_score our model performance is much higher. For same validation process on test dataset from
+table \ref{performanceComparisonWithMeghdouriTest}, our test accuracy is very close to theirs.
+However, as before our precision, recall and f1\_score achieved much better than theirs. Our ROC AUC
+scores are very close too. However, for intrusion detection techniques f-measure is very important,
+in which our model outperforms by a large margin.
+
+\begin{table}
+\normalsize
+\centering
+\caption{Comparison with Meghdouri et al.\cite{meghdouri2018analysis} (Train data)}
+\label{performanceComparisonWithMeghdouriTrain}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|C{3cm}|C{2cm}|C{2cm}|}
+\hline
+\textbf{Metrics(\%)} & \textbf{Train\cite{meghdouri2018analysis}} & \textbf{Train} \\ \hline
+Accuracy & 99.0 & 96.18\\ \hline
+Precision  & 85.9 & 96.56 \\ \hline
+Recall  & 85.1 & 97.87 \\ \hline
+F1\_score  & 84.9 & 97.21 \\ \hline
+ROC AUC  & 99.8 & 99.44 \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}
+\normalsize
+\centering
+\caption{Comparison with Meghdouri et al.\cite{meghdouri2018analysis} (Test data)}
+\label{performanceComparisonWithMeghdouriTest}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|C{3cm}|C{2cm}|C{2cm}|}
+\hline
+\textbf{Metrics(\%)} & \textbf{Test\cite{meghdouri2018analysis}} & \textbf{Test} \\ \hline
+Accuracy & 98.9 & 98.08\\ \hline
+Precision  & 84.9 &  98.79\\ \hline
+Recall & 85.1 & 97.7\\ \hline
+F1\_score & 84.9 & 98.24 \\ \hline
+ROC AUC   & 99.8& 99.81\\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{Validation on separate test data}
+Bhamare et al. \cite{bhamare2016feasibility} achieved acc 89.26\%, TP 93.7\% and TN 95.7\% at prediction threshold 0.5.
+Increasing prediction threshold to 0.7-0.8 their TP improved to 97\%, but TN dropped to 80\%. Where our TP and
+TN are 97\% and 86\% at threshold 0.5 as shown in table \ref{confusionMatrix}.
+Moustafa et al. \cite{moustafa2016evaluation} achieved 85.56\% accuracy and 15.78\% FAR using
+DT technique built in Visual Studio Business Intelligence 2008 with the default input parameters. Our model achieved 91.95\% accuracy and 8.05\% FAR in this case.
+
+\subsection{Others}
+We have not compared with some prior arts. Despite having a separate train and test dataset where authors chose to
+randomly sample train and test data. For example Moustafa et al. \cite{moustafa2017hybrid} \cite{moustafa2018anomaly} \cite{moustafa2019holistic}
+evaluated the model on randomly chosen data from UNSW-NB15 dataset. However, it is not possible to reproduce a random dataset. Also we have not compared our model run time with prior arts as the run time environments are not same.
+
+% Belouch et al. \cite{belouch2018performance} found RandomForest classifier to achieve 97.49\% accuracy, 93.53\% sensitivity and 97.75\% specificity. However, it was not clear which validation approach was taken.
+
+
+\subsection{Results summary}
+
+Followings are the summary of our results:
+\begin{itemize}
+    \item Validating on same data used for training the model would give near perfect results. However, it is due to overfitting which should be avoided.
+    \item Feature engineering can make the model more generalized, thereby improving performance on separate test data.
+    \item There are many features having very low importance. It is found that 17 features have importance less than 1\%.
+    \item Our model can better predict network anomaly than normal records. This can be due to the presence of more anomaly in dataset than normal.
+\end{itemize}
+
+\section{Conclusion \label{conclusion}}
+In this paper, we have presented a boosting algorithm-based model for performing binary classification of the UNSW-NB15 dataset.
+%We have explained all the steps taken from feature preprocessing, selection and validation of the model.
+Different experimentation setups were followed to compare our performance with prior works. Results show that our trained model outperforms state-of-the-art works in most metrics. We have  shown why the experimental setups followed by
+some prior state-of-the-art works are heavily overfitted and should be avoided. Our model is found to perform well on test data when
+it is fitted on train data only, validating the generalization of our model.
+
+This study only performs a binary classification. In  future, we intend to improve  the performance of multiclass-classification on this dataset in a similar way.
+
+
+\bibliography{bibliography}
 \end{document}
 
 
