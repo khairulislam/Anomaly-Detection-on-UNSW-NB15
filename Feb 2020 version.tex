@@ -81,7 +81,7 @@ Prithula Hridi\textsuperscript{1}, Md. Shohrab Hossain\textsuperscript{1}, Husnu
 \maketitle
 
 \begin{abstract}
-Anomaly detection system plays a significant role in recognizing intruders or suspicious activities inside the system, detecting unseen and unknown attacks. In this paper, we have worked on a benchmark network anomaly detection dataset UNSW-NB15, that reflects modern-day network traffic. Previous works on this dataset lacked a proper validation approach or followed only one evaluation setup which made it difficult to compare their results with others using the same dataset with different validation steps. In this paper, we have used a machine learning classifier LightGBM to perform binary classification on this dataset. We have presented a thorough study of the dataset with feature engineering, preprocessing, feature selection. We have evaluated the performance of our model using different experimental setups (used in several previous works)  to clearly evaluate and compare with others. Using ten-fold cross-validation on the train, test, and combined (training and test) dataset, our model has achieved 97.21\%, 98.33\%, and 96.21\% f1\_scores, respectively. Also, the model fitted only on train data, achieved 92.96\% f1\_score on the separate test data. So our model also provides significant performance on unseen data. We have presented complete comparisons with the prior arts using all performance metrics available on them. And we have also shown that our model outperformed them in most metrics and thus can detect network anomalies better.
+Anomaly detection systems are significant in recognizing intruders or suspicious activities by detecting unseen and unknown attacks. In this paper, we have worked on a benchmark network anomaly detection dataset UNSW-NB15, that reflects modern-day network traffic. Previous works on this dataset either lacked a proper validation approach or followed only one evaluation setup which made it difficult to compare their contributions with others using the same dataset, but with different validation steps. In this paper, we have used a machine learning classifier LightGBM to perform binary classification on this dataset. We have presented a thorough study of the dataset with feature engineering, preprocessing, feature selection. We have evaluated the performance of our model using different experimental setups (used in several previous works)  to clearly evaluate and compare with others. Using ten-fold cross-validation on the train, test, and combined (training and test) dataset, our model has achieved 97.21\%, 98.33\%, and 96.21\% f1\_scores, respectively. Also, the model fitted only on train data, achieved 92.96\% f1\_score on the separate test data. So our model also provides significant performance on unseen data. We have presented complete comparisons with the prior arts using all performance metrics available on them. And we have also shown that our model outperformed them in most metrics and thus can detect network anomalies better.
 
 \end{abstract}
 
@@ -91,14 +91,13 @@ anomaly detection, machine learning,  network security.
 %------------------------ Into \input{introduction.tex}
 
 \section{Introduction}
-As web applications are getting increasingly popular, the Internet has become a necessity in our day-to-day life. As a
+Web applications are getting increasingly popular, and the Internet has become an important part in our day-to-day life. As a
 consequence, network systems are being targeted more by attackers with malicious intent. To detect intruders in a
 network system, there are generally two approaches: signature-based and anomaly-based detection. Signature-based systems maintain a database of previously known attacks and raise alarms when any match is found with the analyzed data. However, they are vulnerable to zero-day attacks.
 
 An anomaly in a network means a deviation of traffic data from its normal pattern. Thus, anomaly detection techniques have the advantage of detecting zero-day attacks. However, in a complex and large network system,  it is not easy to define a set of valid requests or normal behavior of the endpoints. Hence, anomaly detection faces the disadvantage of having a high false-positive error rate (events erroneously classified as attacks). There are different types of anomalies that can be mapped with different types of attacks. According to Ahmed et al.\cite{ahmed2016survey}, the main attack types are DoS, Probe, User to Root (U2R), and Remote to User (R2U) attacks. Ahmed et al. \cite{ahmed2016survey} mapped the point anomaly with the U2R and the R2U attacks, the DoS attack to the collective anomaly, and the Probe attack to the contextual anomaly.
 
-In recent years, machine learning and deep learning have become increasingly popular. They have been applied to different anomaly and intrusion detection systems %\cite{fernandes2019comprehensive}, \cite{chalapathy2019deep}.  
-and in many cases, have outperformed the previous state-of-the-art models. As UNSW-NB15 \cite{moustafa2015unsw} is a benchmark network anomaly detection dataset, numerous studies have been done on it.
+With the advance of machine learning and deep learning techniques, in many cases they have outperformed the previous state-of-the-art models. As UNSW-NB15 \cite{moustafa2015unsw} is a benchmark network anomaly detection dataset, numerous studies have been done on it.
 However, to evaluate the same dataset different setups were adopted (Section \ref{relatedWorks}). For example, train and evaluate on train data \cite{mogal2017nids, Kanimozhi2019UNSW-NB15} . Ten-fold cross validation on train data \cite{suleiman2018performance, meftah2019network}), test data \cite{hanif2019intrusion}, combined (train+test) data  \cite{nawir2019effective, koroniotis2017towards}. Five-fold cross validation on train and test data \cite{meghdouri2018analysis} . Train on train data and evaluate on test data  \cite{bhamare2016feasibility, moustafa2016evaluation}.
 
 
@@ -162,7 +161,7 @@ networks would perform on this dataset.
 \subsection{Cross validation}
 Koroniotis et al.\cite{koroniotis2017towards} selected the top ten features of the UNSW-NB15 combined (train+test)
 dataset using Information Gain Ranking Filter. Then they ran ten-fold cross-validations using machine learning techniques.
-Among the four techniques ARM (Association Rule Mining), DT(Decision Tree C4.5 Classifier), NB(Naive Bayes), ANN (Artificial Neural Network) applied, DT (Decision Tree C4.5 Classifier) performed the best at distinguishing between Botnet and normal network traffic.
+Among the techniques applied, DT (Decision Tree C4.5 Classifier) performed the best at distinguishing between Botnet and normal network traffic.
  
  Suleiman et al. \cite{suleiman2018performance} explored the performance of machine learning classifiers on benchmark
 and new datasets (UNSW-NB15, NSL-KDD, and Phishing) using ten-fold cross-validation. They found the RandomForest
@@ -174,17 +173,12 @@ Meftah et al. \cite{meftah2019network} applied both binary and multiclass classi
 cross-validation and decision tree (C5.0) for multiclass classification.
 % with 82.11\% accuracy and decision tree (C5.0) perform the best for multiclass classification with 86\% f-measure and 85.41\% accuracy on train data. 
 Hanif et al. \cite{hanif2019intrusion} used ANN(Artificial Neural Network) on the same dataset. The neural network had one hidden layer and it achieved an average 84\% accuracy and less
-than 8\% false-positive rate in repeated cross-validation. They compared their performance with prior works on the NSL-KDD dataset, instead of works on the same dataset.
- 
- Meghdouri et al. \cite{meghdouri2018analysis} applied feature preprocessing and principal component analysis on the UNSW-NB15 dataset. Then performed five-fold cross-validation using a RandomForest classifier.
+than 8\% false-positive rate in repeated cross-validation. They compared their performance with prior works on the NSL-KDD dataset, instead of works on the same dataset. Meghdouri et al. \cite{meghdouri2018analysis} applied feature preprocessing and principal component analysis on the UNSW-NB15 dataset. Then performed five-fold cross-validation using a RandomForest classifier.
  % and achieved 84.9\% f-measure.
 
 \subsection{Validation on separate test data}
-Moustafa et al. \cite{moustafa2016evaluation} analyzed the statistical properties of the UNSW-NB15 dataset. The complexity of the dataset was evaluated using five techniques (DT, LR, NB, ANN, and EM clustering). There, based on the performance results UNSW-NB15 was found to be more complex compared to the KDD99 dataset.
-
-Vinaykumar et al. \cite{vinayakumar2019deep} used both classical machine learning classifiers and deep neural networks on several intrusion detection datasets. The classical models performed much better than the neural network models.
-% Their best DNN performance on the test dataset was 79.4\% accuracy and 80.2\% f1\_score. However, their RandomForest model achieved 90.2\% accuracy and 92.4\% f1\_score which is far better than the deep neural network model.
-Dahiya et al. \cite{dahiya2018network} applied feature reduction techniques (CCA, LDA) on train and test datasets. They worked on both larger and smaller versions of the UNSW-NB15 dataset. Bhamare et al. \cite{bhamare2016feasibility} tested the robustness of machine learning models in cloud scenarios. So they trained classifiers on the UNSW-NB15 dataset and tested them on a cloud security dataset ISOT. They found that these models do not perform well in a different environment.
+Moustafa et al. \cite{moustafa2016evaluation} analyzed the statistical properties of the UNSW-NB15 dataset. The complexity of the dataset was evaluated using five techniques (DT, LR, NB, ANN, and EM clustering). There, based on the performance results UNSW-NB15 was found to be more complex compared to the KDD99 dataset. Vinaykumar et al. \cite{vinayakumar2019deep} used classical machine learning classifiers, and deep neural networks on several intrusion detection datasets. The classical models performed much better than the neural network models.
+Dahiya et al. \cite{dahiya2018network} applied feature reduction techniques on both larger and smaller versions of the UNSW-NB15 dataset. Bhamare et al. \cite{bhamare2016feasibility} tested the robustness of machine learning models in cloud scenarios. They trained classifiers on the UNSW-NB15 dataset and tested them on a cloud security dataset ISOT. Bhamare et al. \cite{bhamare2016feasibility} found that these models did not perform well in cloud environment.
 
 \subsection{Others}
 Viet et al. \cite{viet2018using} used a deep learning model on the UNSW-NB15 and NSL-KDD datasets only to detect network scanning attacks. In UNSW-NB15 as the scanning types are
@@ -196,7 +190,7 @@ labeled altogether, so they applied binary classification for it.
 % Their RandomForest classifier achieved 97.49\% accuracy on the train dataset. 
 
 \subsection{Gap analysis}
-To the best of our knowledge, there has been no work that has provided a thorough study of the UNSW-NB15 dataset with feature engineering to improve results. Moreover, most of the previous works focused on only one evaluation process. So it is hard to make a valid comparison among them. For example, the performance achieved in five-fold cross-validation, can not be compared with that achieved in ten-fold cross-validation. So, we have evaluated our model performance using all possible experimentation setups found in prior arts and provided a thorough comparison with prior state-of-the-art techniques. We have also used feature engineering to reduce overfitting, thereby providing a more generalized model.
+To the best of our knowledge, there has been no work that has provided a thorough study of the UNSW-NB15 dataset with feature engineering to improve results. Moreover, most of the previous works on this dataset focused on only one evaluation process. So it is difficult to make a proper comparison among them. For example, the performance achieved in five-fold cross-validation, can not be compared with that achieved in ten-fold cross-validation. So, we have evaluated our model performance using all possible experimentation setups found in prior arts and provided a thorough comparison with prior state-of-the-art techniques. We have also used feature engineering to reduce overfitting, thereby providing a more generalized model.
 
 
 %--------------------------------------------
@@ -206,14 +200,14 @@ We have targeted only to perform binary classification on the dataset. We have u
 
 
 \subsection{Dataset Description}
-We have used the UNSW-NB15 dataset\cite{moustafa2015unsw} which is a recent benchmark dataset for NIDS (Network Intrusion Detection Systems). It was designed at the Cyber Range Lab of the Australian Center of Cyber Security. Compared to other existing datasets (such as KDDCup99, NSL-KDD, DARPA), the UNSW-NB15 dataset is more recent and better reflects modern network traffic. UNSW-NB15 represents nine major families of attacks by utilizing the IXIA PerfectStorm tool. The main data set contains 2,540,044 observations. A part of this data set was divided into train and test sets by the authors, which has been used in this work. The dataset description is shown in Table \ref{datasetDescription}. We have considered binary classification for this study. Hence, we have only predicted whether the record is attack type or normal. The dataset labels class 0 for normal and 1 for attack records. From Table \ref{datasetDescription} we can see the train data is imbalanced. The majority of the records are anomalies. However, in the test data, they are nearly balanced. 
+We have used the UNSW-NB15 dataset\cite{moustafa2015unsw} which is a recent benchmark dataset for NIDS (Network Intrusion Detection Systems). The dataset was created at the Cyber Range Lab of the Australian Center of Cyber Security. Compared to other existing datasets (such as KDDCup99, NSL-KDD, DARPA), the UNSW-NB15 dataset is more recent and better reflects modern network traffic. UNSW-NB15 represents nine major families of attacks by utilizing the IXIA PerfectStorm tool. The main data set contains 2,540,044 observations. The authors divided a part of this data set was divided into train and test sets, which has been used in this work. The dataset description is shown in Table \ref{datasetDescription}. We have considered binary classification for this study. Hence, we have only predicted whether the record is attack type or normal. The dataset labels class 0 for normal and 1 for attack records. From Table \ref{datasetDescription} we can see the train data is imbalanced. The majority of the records are anomalies. However, in the test data, they are nearly balanced. 
 
 
 
 \begin{table}
 \normalsize
 \centering
-\caption{Dataset Description}
+\caption{UNSW-NB15 Dataset Description}
 \label{datasetDescription}
 \renewcommand{\arraystretch}{1.2}
 
@@ -235,8 +229,8 @@ In the following list, we have described the features provided by the larger UNS
 \item dur :Record total duration.
 \item sbytes:Source to destination transaction bytes.
 \item dbytes:Destination to source transaction bytes.
-\item sttl:Source to destination time to live value.
-\item dttl:Destination to source time to live value.
+\item sttl: Live value of source to destination time.
+\item dttl:Live value of destination to source time.
 \item sloss:Source packets retransmitted or dropped.
 \item dloss:Destination packets retransmitted or dropped.
 \item service: http, ftp, smtp, ssh, dns, ftp-data ,irc  and (-) if not much used service.
@@ -248,17 +242,18 @@ In the following list, we have described the features provided by the larger UNS
 \item dwin:Destination TCP window advertisement value.
 \item stcpb:Source TCP base sequence number.
 \item dtcpb:Destination TCP base sequence number.
-\item smean:Mean of the packet size transmitted by the src.\item dmean:Mean of the packet size transmitted by the dst.
-\item trans\_depth:Represents the pipelined depth into the connection of http request/response transaction.
-\item response\_body\_len: Actual uncompressed content size of the data transferred from the server’s http service.
+\item smean:Mean of the packet size transmitted by the source.
+\item dmean:Mean of the packet size transmitted by the destination.
+\item trans\_depth: The pipelined depth into the connection of http request/response transaction.
+\item response\_body\_len: The actual uncompressed content size of the data transferred from the server’s http service.
 \item sjit: Source jitter (mSec).
 \item djit: Destination jitter (mSec).
 \item rate: a feature based on record start and end time.
 \item sinpkt: Source interpacket arrival time (mSec).
 \item dinpkt: Destination interpacket arrival time (mSec).
-\item tcprtt:TCP connection setup round-trip time, the sum of ’synack’ and ’ackdat’.
-\item synack: TCP connection setup time, the time between the SYN and the SYN\_ACK packets.
-\item ackdat:TCP connection setup time, the time between the SYN\_ACK and the ACK packets.
+\item tcprtt: TCP connection setup round-trip time. The sum of ’synack’ and ’ackdat’.
+\item synack: TCP connection setup time. The time between the SYN and the SYN\_ACK packets.
+\item ackdat: TCP connection setup time. The time between the SYN\_ACK and the ACK packets.
 \item is\_sm\_ips\_ports: If source and destination IP addresses are equal and port numbers equal then, this variable takes value 1 else 0.
 \item is\_ftp\_login:If the ftp session is accessed by user and password then 1 else 0.
 
@@ -267,23 +262,23 @@ In the following list, we have described the features provided by the larger UNS
 The following features are calculated in the last 100 connections from the current record.
 \begin{itemize} 
 % \setcounter{enumi}{33}
-\item ct\_state\_ttl: Number for each state according to specific range of values for source/destination time to live.
-\item ct\_flw\_http\_mthd :Number of flows that has methods such as Get and Post in http service.
+\item ct\_state\_ttl: According to specific range of values of source/destination time to live for each stat .
+\item ct\_flw\_http\_mthd :Number of flows that has  Get and Post methods in http service.
 
 \item ct\_ftp\_cmd: Number of flows that has a command in ftp session.
-\item ct\_srv\_src: Number of connections that contain the same service  and source address.
-\item ct\_srv\_dst: Number of connections that contain the same service  and destination address.
+\item ct\_srv\_src: Number of connections that contain the same address for service and source.
+\item ct\_srv\_dst: Number of connections that contain the same address for service  and destination.
 \item ct\_dst\_ltm: Number of connections of the same destination address.
 \item ct\_src\_ltm:Number of connections of the same source address.
 \item ct\_src\_dport\_ltm:Number of connections of the same source address and the destination port.
 \item ct\_dst\_sport\_ltm:Number of connections of the same destination address and the source port.
-\item ct\_dst\_src\_ltm: Number of connections of the same source  and the destination address.
+\item ct\_dst\_src\_ltm: Number of connections of the same source and the destination address.
 \end{itemize}
 
 There are two labeled target columns :
 \begin{itemize} 
 % setcounter{enumi}{43}
-    \item attack\_cat: The name of each attack category. In this data set, nine categories e.g. Fuzzers, Analysis, Backdoors, DoS Exploits, Generic, Reconnaissance, Shellcode, and Worm.
+    \item attack\_cat: The name of each attack category. They are Fuzzers, Analysis, Backdoors, DoS Exploits, Generic, Reconnaissance, Shellcode, and Worm.
  \item Label:0 for normal and 1 for attack records.
 \end{itemize}
 
@@ -363,7 +358,7 @@ We have used pandas library to OneHotEncode all the categorical features. It bec
 
 
 \subsection{Evaluation metrics}
-Here, we have discussed all the performance metrics used to compare the performance of our approach with previous works.
+In this section, we have discussed the performance metrics we have used in our experiments on the UNSW-NB15 dataset \cite{moustafa2015unsw}. We have also used them to compare the performance of our approach with previous works.
 %All the metrics were calculated using the sklearn.metrics module.
 
 \begin{itemize}
@@ -405,7 +400,7 @@ It is the proportion of incorrectly identified observations.
 \end{equation}
 
 \subsubsection{False Alarm Rate (FAR)}
-It represents the probability that a record gets incorrectly classified.
+The probability that a record gets incorrectly classified.
 \begin{equation}
     FAR = \frac{FP+FN}{FP+FN+TP+TN}
 \end{equation}
@@ -430,7 +425,7 @@ For evaluating the UNSW-NB15 dataset, we have performed ten-fold cross-validatio
     num\_round = 2000, early\_stopping\_rounds = 50.
 \end{enumerate}
 
-The results of this experiment this shown in Table \ref{crossvalidationWithDifferentModels}. We have chosen the best model based on f1-score and accuracy. Here class labels are 0 for normal and 1 for attack records. So these metrics are the best choices to validate the model performance. As shown in Table \ref{crossvalidationWithDifferentModels}, LightGBM achieved the best performance in both accuracy (96.18\%) and f1-score (91.21\%). LightGBM ( Ke et al. \cite{ke2017lightgbm})is a highly efficient gradient boosting framework that uses tree-based learning algorithms. It follows a more complex leaf-wise split approach rather than a level-wise approach. Which reduces overfitting and improves the validation results. 
+The result of this experiment is shown in Table \ref{crossvalidationWithDifferentModels}. We have chosen the best model based on f1-score and accuracy. Here class labels are 0 for normal and 1 for attack records. So these metrics are the best choices to validate the model performance. As shown in Table \ref{crossvalidationWithDifferentModels}, LightGBM achieved the best performance in both accuracy (96.18\%) and f1-score (91.21\%). LightGBM ( Ke et al. \cite{ke2017lightgbm})is a highly efficient gradient boosting framework that uses tree-based learning algorithms. It follows a more complex leaf-wise split approach rather than a level-wise approach. Which reduces overfitting and improves the validation results. 
 
 \subsection{Handling class imbalance}
 From Table \ref{datasetDescription} we can see the train dataset is slightly imbalanced. The ratio of normal and anomaly records is 56: 119.  We used is\_unbalance and scale\_pos\_weight  parameters provided by LightGBM to test whether handling class imbalance will improve results. If is\_unbalance is set to true, LightGBM will automatically try to balance the weight of the dominated label. Using scale\_pos\_weight, we can manually set weight for the positive class. % However, the LightGBM official documentation \footnote{https://lightgbm.readthedocs.io/en/latest/Parameters.html} warns, using this should increase the overall performance metric of the model, but it will also result in poor estimates of the individual class probabilities. 
@@ -683,13 +678,13 @@ The followings are the summary of our results:
     \item Validating on the same data used for training the model would give near-perfect results. However, it is due to overfitting. So this approach should not be followed.
     \item Feature engineering can make the model more generalized and improve performance on separate test data.
     \item There are many features having very low importance. Nearly 17 features have the importance of less than 1\%.
-    \item Our model can better predict network anomaly than normal records. This can be due to the presence of more anomalies in the dataset than normal.
+    \item Our model can better predict network anomaly than normal records. This is due to the presence of more anomalies in the dataset than normal.
 \end{itemize}
 
 \section{Conclusion \label{conclusion}}
 In this paper, we have presented a boosting algorithm-based model for performing binary classification of the UNSW-NB15 dataset.
 %We have explained all the steps taken from feature preprocessing, selection, and validation of the model. 
-Different experimentation setups were followed to compare our performance with prior works. Results show that our model outperforms state-of-the-art works in most metrics. We have shown why the experimental setups followed by some prior works are heavily overfitted and should be avoided. Even when using a different cross-validation approach, our model outperforms most prior arts. Our model is also found to perform well on test data when it is fitted on train data only, validating the generalization of our model. So we believe this will help the network security community in improving anomaly detection. This study only performs a binary classification. In the future, we intend to improve the performance of multiclass-classification on this dataset in a similar way.
+Different experimentation setups were followed to compare our performance with prior works. Results show that our model outperforms state-of-the-art works in most metrics. We have shown why the experimental setups followed by some prior works are heavily overfitted and should be avoided. Even when using a different cross-validation approach, our model outperforms most prior arts. Our model is also found to perform well on test data when it is fitted on train data only, validating the generalization of our model. So we believe this will help the network security community in improving anomaly detection. This study only performs a binary classification. However, our proposed algorithm can be easily adapted to multiclass-classification by changing LightGBM objective parameter to 'multiclass'. In the future, we intend to improve the performance of multiclass-classification on this dataset in a similar way.
 
 
 \bibliography{bibliography}
