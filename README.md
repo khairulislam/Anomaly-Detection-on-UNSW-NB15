@@ -90,3 +90,16 @@ Only used DNS and HTTP protocol data.
 
 * Analysis of Lightweight Feature Vectors for Attack
 Detection in Network Traffic: Did on complete unsw-nb15 dataset. Feature scaling, selection, one hot encoding, pca, 5 fold cross validation
+
+# Citation
+```
+@INPROCEEDINGS{9315049,
+  author={Islam, Md. Khairul and Hridi, Prithula and Hossain, Md. Shohrab and Narman, Husnu S.},
+  booktitle={2020 30th International Telecommunication Networks and Applications Conference (ITNAC)}, 
+  title={Network Anomaly Detection Using LightGBM: A Gradient Boosting Classifier}, 
+  year={2020},
+  volume={},
+  number={},
+  pages={1-7},
+  doi={10.1109/ITNAC50341.2020.9315049}}
+```
